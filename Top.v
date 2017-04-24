@@ -5,7 +5,8 @@ module Top(
 	 input clk,reset,
 	 output hsync,
 	 output vsync,
-	 output [2:0] rgb
+	 output [2:0] rgb,
+	 output [7:0]out
 );
 
 wire clk, board_clk,sys_clk;
@@ -58,6 +59,17 @@ VGA_Controller vga_unit(
 	.pixel_x(pix_x),
 	.pixel_y(pix_y)
 );
+snake_data instance_Snake (
+	 .clk(clk),
+    .up(up), 
+    .down(down), 
+    .right(right), 
+    .left(left), 
+    .outS(out)
+    );
+
+
+
 
 always @(*)
 	if(~video_on)
