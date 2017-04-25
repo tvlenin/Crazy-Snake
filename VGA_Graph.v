@@ -63,6 +63,8 @@ reg [9:0]fruitX2 = 10'd177;
 reg [9:0]fruitY1 = 10'd152;
 reg [9:0]fruitY2 = 10'd177;
 
+reg [9:0] randNumX = 0;
+reg [9:0] randNumY = 0;
 
 
 assign wallLeft = (wall_Left_X1 <= pix_x) && (pix_x <= wall_Left_X2);
@@ -141,6 +143,7 @@ assign graph_rgb =(video_on) ? rgb_reg : 3'b0;
 
 	
 integer ix;
+integer ifruit;
 always @(posedge clk)begin
 	//if(counter == 25000000)begin //AVANZA CADA SEGUNDO
 	
@@ -170,7 +173,16 @@ always @(posedge clk)begin
 			
 		snakeSize = snakeSize + 1;
 		snakeBody[snakeSize][4] <= 1;
-		
+//Verifica si la fruta cae en la serpiente
+		randNumX = snakeBody[0][3];
+		randNumY = snakeBody[0][1];
+		for(ifruit = 0; ifruit<maxSnakeSegments; ifruit=ifruit+1)begin
+			if(snakeBody[ifruit][3] == randX && snakeBody[ifruit][1] == randY)begin
+				randNumX = randNumX + 25;
+				randNumY = randNumY + 50;
+				//ifruit = 0;
+			end;
+		end
 		fruitX1=randX;
 		fruitX2=randX+25;
 		fruitY1=randY;
@@ -251,7 +263,7 @@ always @(posedge clk)begin
 		counter = counter + 1'b1;
 end
 
-assign headX = snakeBody[0][3];
-assign headY = snakeBody[0][1];
+assign headX = randNumX;
+assign headY = randNumY;
 
 endmodule
