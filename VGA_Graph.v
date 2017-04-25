@@ -86,16 +86,18 @@ assign snakeRGB = 3'b010;
 assign fruitRGB = 3'b100;
 
 
-
-integer i;
-always @(posedge clk)begin
-	/*for(i = 0; i < maxSnakeSegments; i = i+1)
-		if(snakeBody[i][4] == 1)
+/*initial begin
+	for(i = 0; i < maxSnakeSegments; i = i+1)
 			wSnakeBody[i]=(snakeBody[i][3] <= pix_x) && 
 											 (pix_x <= snakeBody[i][2]) &&
 											 (snakeBody[i][1] <= pix_y) && 
-											 (pix_y <= snakeBody[i][0]);*/
-	if(snake_counter == 10)begin
+											 (pix_y <= snakeBody[i][0]);
+end*/
+
+
+
+always @(posedge clk)begin
+	if(snake_counter == 1 )begin
 		if(snake_body_i < snakeSize)
 			snake_body_i = snake_body_i+1;
 		else
@@ -105,10 +107,6 @@ always @(posedge clk)begin
 	else begin
 		snake_counter = snake_counter + 1;
 		if(snakeBody[snake_body_i][4] == 1)
-			/*wSnakeBody[snake_body_i]=(snakeBody[snake_body_i][3] <= pix_x) && 
-											 (pix_x <= snakeBody[snake_body_i][2]) &&
-											 (snakeBody[snake_body_i][1] <= pix_y) && 
-											 (pix_y <= snakeBody[snake_body_i][0]);*/
 			wSnakeBody=(snakeBody[snake_body_i][3] <= pix_x) && 
 											 (pix_x <= snakeBody[snake_body_i][2]) &&
 											 (snakeBody[snake_body_i][1] <= pix_y) && 
@@ -189,7 +187,7 @@ always @(posedge clk)begin
 				score_reg1 <= score_reg1 - 1;
 			end*/
 			if(ix==0)begin
-				if(snakeBody[snakeSize][4] == 1)begin
+				if(snakeBody[snakeSize][4] === 1)begin
 					snakeBody[ix][3] <= initX1;
 					snakeBody[ix][2] <= initX2;
 					snakeBody[ix][1] <= initY1;
@@ -197,7 +195,7 @@ always @(posedge clk)begin
 				end
 			end
 			else begin
-				if(snakeBody[snakeSize][4] == 1)begin
+				if(snakeBody[snakeSize][4] === 1)begin
 					snakeBody[ix][3] <= snakeBody[ix-1][3];
 					snakeBody[ix][2] <= snakeBody[ix-1][2];
 					snakeBody[ix][1] <= snakeBody[ix-1][1];
