@@ -8,7 +8,10 @@ module vga_top(
 	output [3:0] seg_selector,
 	output [7:0] sevenseg
 );
-	
+	wire [9:0] headX_wire;
+	wire [9:0] headY_wire;
+	wire [9:0] randX_wire;
+	wire [9:0] randY_wire;
 	
 	wire [9:0] pix_x;
 	wire [9:0] pix_y;
@@ -57,7 +60,11 @@ module vga_top(
 		.score1(wScore1),
 		.score2(wScore2),
 		.score3(wScore3),
-		.score4(wScore4)
+		.score4(wScore4),
+		.headX(headX_wire),//output
+		.headY(headY_wire),
+		.randX(randX_wire),
+		.randY(randY_wire)
 	);
 		
 	Buttons_Control buttons_unit(
@@ -78,5 +85,16 @@ module vga_top(
 		.seg_selector(seg_selector), 
 		.segments(sevenseg)
 	);
+	
+	Random_Generator instance_Random (
+    .clock(ClkPort), 
+    .yValues(headY_wire), 
+    .xValues(headX_wire), 
+    .randNumX(randX_wire), 
+    .randNumY(randY_wire)
+    );
+
+
+
 	
 endmodule
