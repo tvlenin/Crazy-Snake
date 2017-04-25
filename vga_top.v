@@ -2,7 +2,7 @@
 
 module vga_top(
 	input ClkPort, 
-	input b_Up,b_Down,b_Left,b_Right,
+	input b_Up,b_Down,b_Left,b_Right,b_Pause,
 	output vga_h_sync, vga_v_sync, 
 	output wire [2:0] rgb,
 	output [3:0] seg_selector,
@@ -15,7 +15,7 @@ module vga_top(
 	
 	wire [9:0] pix_x;
 	wire [9:0] pix_y;
-	wire video_on;
+	wire video_on,wIsPaused;
 	wire [1:0] wMoveState;
 	wire [7:0] wRandomX;
 	wire [7:0] wRandomY;
@@ -55,8 +55,6 @@ module vga_top(
 		.pix_y(pix_y),
 		.graph_rgb(rgb),
 		.moveState(wMoveState),
-		.randomX(wRandomX),
-		.randomY(wRandomY),
 		.score1(wScore1),
 		.score2(wScore2),
 		.score3(wScore3),
@@ -64,7 +62,8 @@ module vga_top(
 		.headX(headX_wire),//output
 		.headY(headY_wire),
 		.randX(randX_wire),
-		.randY(randY_wire)
+		.randY(randY_wire),
+		.isPaused(wIsPaused)
 	);
 		
 	Buttons_Control buttons_unit(
@@ -73,7 +72,9 @@ module vga_top(
 		.b_Dw(b_Down),
 		.b_Lf(b_Left),
 		.b_Rg(b_Right),
-		.moveState(wMoveState)
+		.b_Pause(b_Pause),
+		.moveState(wMoveState),
+		.isPaused(wIsPaused)
 	);
 	
 	Segments_Controller segments_unit(

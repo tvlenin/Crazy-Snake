@@ -6,12 +6,12 @@ module VGA_Graph(
 	input wire [9:0] pix_x, pix_y,
 	output [2:0] graph_rgb,
 	input [3:0] moveState,
-	input [7:0] randomX,randomY,
 	output [3:0] score1,score2,score3,score4,
 	output [9:0] headX,
 	output [9:0] headY,
 	input [9:0]	randX,
-	input [9:0]	randY
+	input [9:0]	randY,
+	input isPaused
 );
 
 localparam maxSnakeSegments = 20;
@@ -203,46 +203,48 @@ always @(posedge clk)begin
 				end
 			end
 		end
-	
-		if(moveState == 0)begin
-			if(initY1 == 2)begin
-				initY1 = 10'd452;
-				initY2 = 10'd477;
+		
+		if(~isPaused)begin
+			if(moveState == 0)begin
+				if(initY1 == 2)begin
+					initY1 = 10'd452;
+					initY2 = 10'd477;
+				end
+				else begin
+					initY1 = initY1 - 25;
+					initY2 = initY2 - 25;
+				end
 			end
-			else begin
-				initY1 = initY1 - 25;
-				initY2 = initY2 - 25;
+			else if(moveState == 1)begin
+				if(initY2 == 477)begin
+					initY1 = 10'd2;
+					initY2 = 10'd27;
+				end
+				else begin
+					initY1 = initY1 + 25;
+					initY2 = initY2 + 25;
+				end
+				
 			end
-		end
-		else if(moveState == 1)begin
-			if(initY2 == 477)begin
-				initY1 = 10'd2;
-				initY2 = 10'd27;
+			else if(moveState == 2)begin
+				if(initX1 == 2)begin
+					initX1 = 10'd577;
+					initX2 = 10'd602;
+				end
+				else begin
+					initX1 = initX1 - 25;
+					initX2 = initX2 - 25;
+				end
 			end
-			else begin
-				initY1 = initY1 + 25;
-				initY2 = initY2 + 25;
-			end
-			
-		end
-		else if(moveState == 2)begin
-			if(initX1 == 2)begin
-				initX1 = 10'd577;
-				initX2 = 10'd602;
-			end
-			else begin
-				initX1 = initX1 - 25;
-				initX2 = initX2 - 25;
-			end
-		end
-		else if(moveState == 3)begin
-			if(initX2 == 602)begin
-				initX1 = 10'd2;
-				initX2 = 10'd27;
-			end
-			else begin
-				initX1 = initX1 + 25;
-				initX2 = initX2 + 25;
+			else if(moveState == 3)begin
+				if(initX2 == 602)begin
+					initX1 = 10'd2;
+					initX2 = 10'd27;
+				end
+				else begin
+					initX1 = initX1 + 25;
+					initX2 = initX2 + 25;
+				end
 			end
 		end
 		counter = 0;
