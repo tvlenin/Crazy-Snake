@@ -1,15 +1,17 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// VGA verilog template
-// Author:  Da Cheng
-//////////////////////////////////////////////////////////////////////////////////
+
 module vga_top(
 	input ClkPort, 
 	input b_Up,b_Down,b_Left,b_Right,
 	output vga_h_sync, vga_v_sync, 
-	output wire [2:0] rgb
+	output wire [2:0] rgb,
+	output [3:0] seg_selector,
+	output [7:0] sevenseg
 );
-	
+	wire [9:0] headX_wire;
+	wire [9:0] headY_wire;
+	wire [9:0] randX_wire;
+	wire [9:0] randY_wire;
 	
 	wire [9:0] pix_x;
 	wire [9:0] pix_y;
@@ -17,6 +19,7 @@ module vga_top(
 	wire [1:0] wMoveState;
 	wire [7:0] wRandomX;
 	wire [7:0] wRandomY;
+	wire [3:0] wScore1,wScore2,wScore3,wScore4;
 	
 	/*  LOCAL SIGNALS */
 	wire	Reset, ClkPort, board_clk, sys_clk;
@@ -32,9 +35,7 @@ module vga_top(
 			end
       else
 			DIV_CLK <= DIV_CLK + 1'b1;
-	end	
-
-	assign 	{St_ce_bar, St_rp_bar, Mt_ce_bar, Mt_St_oe_bar, Mt_St_we_bar} = {5'b11111};
+	end
 	
 	
 	hvsync_generator syncgen(
@@ -55,7 +56,15 @@ module vga_top(
 		.graph_rgb(rgb),
 		.moveState(wMoveState),
 		.randomX(wRandomX),
-		.randomY(wRandomY)
+		.randomY(wRandomY),
+		.score1(wScore1),
+		.score2(wScore2),
+		.score3(wScore3),
+		.score4(wScore4),
+		.headX(headX_wire),//output
+		.headY(headY_wire),
+		.randX(randX_wire),
+		.randY(randY_wire)
 	);
 		
 	Buttons_Control buttons_unit(
@@ -67,5 +76,25 @@ module vga_top(
 		.moveState(wMoveState)
 	);
 	
+	Segments_Controller segments_unit(
+		.clk(ClkPort),
+		.score1(wScore1),
+		.score2(wScore2),
+		.score3(wScore3),
+		.score4(wScore4),
+		.seg_selector(seg_selector), 
+		.segments(sevenseg)
+	);
+	
+	Random_Generator instance_Random (
+    .clock(ClkPort), 
+    .yValues(headY_wire), 
+    .xValues(headX_wire), 
+    .randNumX(randX_wire), 
+    .randNumY(randY_wire)
+    );
+
+
+
 	
 endmodule
