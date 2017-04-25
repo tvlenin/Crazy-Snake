@@ -10,10 +10,23 @@ module VGA_Graph(
 	output [3:0] score1,score2,score3,score4
 );
 
+localparam maxSnakeSegments = 20;
+localparam wall_Left_X1 = 0;
+localparam wall_Left_X2 = 2;
+localparam wall_Right_X1 = 602;
+localparam wall_Right_X2 = 604;
+localparam wall_Top_Y1 = 0;
+localparam wall_Top_Y2 = 2;
+localparam wall_Bottom_Y1 = 477;
+localparam wall_Bottom_Y2 = 479;
+
+
+
+
 wire wallLeft,wallRight,wallTop,wallBottom;
 wire snake,fruit;
 
-reg wSnakeBody;
+reg wSnakeBody[maxSnakeSegments:0];
 
 reg [3:0] score_reg1 = 0;
 reg [3:0] score_reg2 = 0;
@@ -24,27 +37,20 @@ reg [3:0] score_factor = 4'd5;
 wire [2:0] wallRGB,snakeRGB,fruitRGB;
 reg [2:0] rgb_reg;
 
-localparam wall_Left_X1 = 0;
-localparam wall_Left_X2 = 2;
-localparam wall_Right_X1 = 602;
-localparam wall_Right_X2 = 604;
-localparam wall_Top_Y1 = 0;
-localparam wall_Top_Y2 = 2;
-localparam wall_Bottom_Y1 = 477;
-localparam wall_Bottom_Y2 = 479;
+
 
 reg [64:0] counter = 0;
 reg [64:0] fruit_counter = 0;
 reg [64:0] snake_counter = 0;
-reg [11:0] snakeSize = 65'd1;
-reg [11:0] maxSnakeSize = 65'd2000;
+reg [11:0] snakeSize = 0;
+reg [maxSnakeSegments-1:0] snake_body_i = 0;
 
 reg [9:0]initX1 = 10'd77;
 reg [9:0]initX2 = 10'd102;
 reg [9:0]initY1 = 10'd77;
 reg [9:0]initY2 = 10'd102;
 
-reg [9:0]snakeBody [20:0][4:0];
+reg [9:0]snakeBody [maxSnakeSegments:0][4:0];
 
 
 reg [9:0]fruitX1 = 10'd152;
@@ -75,39 +81,54 @@ assign snakeRGB = 3'b010;
 assign fruitRGB = 3'b100;
 
 
+
 integer i;
 always @(posedge clk)begin
-	if(snake_counter == 10)begin
-		if(i < snakeSize)
-			i = i+1;
+	for(i = 0; i < maxSnakeSegments; i = i+1)
+		if(snakeBody[i][4] == 1)
+			wSnakeBody[i]=(snakeBody[i][3] <= pix_x) && 
+											 (pix_x <= snakeBody[i][2]) &&
+											 (snakeBody[i][1] <= pix_y) && 
+											 (pix_y <= snakeBody[i][0]);
+	/*if(snake_counter == 100000)begin
+		if(snake_body_i < snakeSize)
+			snake_body_i = snake_body_i+1;
 		else
-			i = 0;
+			snake_body_i = 0;
 		snake_counter = 0;
 	end
 	else begin
 		snake_counter = snake_counter + 1;
-		if(snakeBody[i][4] == 1)
-			wSnakeBody =(snakeBody[i][3] <= pix_x) && (pix_x <= snakeBody[i][2]) &&
-							(snakeBody[i][1] <= pix_y) && (pix_y <= snakeBody[i][0]);
-	end
+		if(snakeBody[snake_body_i][4] == 1)
+			wSnakeBody[snake_body_i]=(snakeBody[snake_body_i][3] <= pix_x) && 
+											 (pix_x <= snakeBody[snake_body_i][2]) &&
+											 (snakeBody[snake_body_i][1] <= pix_y) && 
+											 (pix_y <= snakeBody[snake_body_i][0]);
+	end*/
 end
 
-
+integer is;
 always @(posedge clk)begin
 	
 	if(~video_on)
 		rgb_reg = 3'b111;
-	else 
+	else
 		if (wallLeft || wallRight || wallTop || wallBottom)
 			rgb_reg = wallRGB;
-		else if(snake || wSnakeBody)begin
+		else if(snake || wSnakeBody[0] || wSnakeBody[1] || wSnakeBody[2])begin
 			rgb_reg = snakeRGB;
 		end
 		else if(fruit)
 			rgb_reg = fruitRGB;
-		else 
+		else begin
+			/*for(is = 0; is<maxSnakeSegments; is=is+1)begin
+				if(wSnakeBody[is])
+					rgb_reg = snakeRGB;
+				else
+					rgb_reg = 3'b000;
+			end*/
 			rgb_reg = 3'b000;
-
+		end
 end
 assign graph_rgb =(video_on) ? rgb_reg : 3'b0;
 
@@ -139,9 +160,10 @@ always @(posedge clk)begin
 		end
 		else
 			score_reg1 <= score_reg1 + 1;
-		
+			
 		snakeSize = snakeSize + 1;
 		snakeBody[snakeSize][4] <= 1;
+		
 		
 		fruitX1=fruitX1+25;
 		fruitX2=fruitX2+25;
@@ -150,7 +172,7 @@ always @(posedge clk)begin
 	//if(counter == 10000000)begin
 	if(counter == 8000000)begin
 	
-		for(ix=0; ix < 20; ix=ix+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
+		for(ix=0; ix < maxSnakeSegments; ix=ix+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
 			if(snakeBody[ix][3] == initX1 && snakeBody[ix][2] == initX2 &&
 				snakeBody[ix][1] == initY1 && snakeBody[ix][0] == initY2)begin
 				score_reg1 <= score_reg1 - 1;
