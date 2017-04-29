@@ -16,7 +16,7 @@ reg pause_reg;
 always @(posedge clk)begin
 	if(b_Pause)begin
 		pause_count = pause_count + 1;
-		if(pause_count > 4'b1100)begin
+		if(pause_count > 4'b1001)begin
 			pause_reg = ~pause_reg;
 			pause_count = 0;
 		end

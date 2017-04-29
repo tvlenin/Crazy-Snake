@@ -30,8 +30,8 @@ localparam wall_Bottom_Y2 = 479;
 wire wallLeft,wallRight,wallTop,wallBottom;
 wire snake,fruit;
 
-//reg wSnakeBody[maxSnakeSegments:0];
-reg wSnakeBody;
+reg wSnakeBody[maxSnakeSegments:0];
+//reg wSnakeBody;
 
 reg [3:0] score_reg1 = 0;
 reg [3:0] score_reg2 = 0;
@@ -44,10 +44,12 @@ reg [2:0] rgb_reg;
 
 
 
+reg [24:0] gameover_counter = 0;
 reg [64:0] counter = 0;
 reg [64:0] fruit_counter = 0;
 reg [64:0] snake_counter = 0;
 reg [11:0] snakeSize = 0;
+reg gameover = 0;
 reg [maxSnakeSegments-1:0] snake_body_i = 0;
 
 reg [9:0]initX1 = 10'd77;
@@ -87,34 +89,17 @@ assign wallRGB = 3'b111;
 assign snakeRGB = 3'b010;
 assign fruitRGB = 3'b100;
 
-
-/*initial begin
-	for(i = 0; i < maxSnakeSegments; i = i+1)
-			wSnakeBody[i]=(snakeBody[i][3] <= pix_x) && 
-											 (pix_x <= snakeBody[i][2]) &&
-											 (snakeBody[i][1] <= pix_y) && 
-											 (pix_y <= snakeBody[i][0]);
-end*/
-
-
-
-always @(posedge clk)begin
-	if(snake_counter == 1 )begin
-		if(snake_body_i < snakeSize)
-			snake_body_i = snake_body_i+1;
-		else
-			snake_body_i = 0;
-		snake_counter = 0;
-	end
-	else begin
-		snake_counter = snake_counter + 1;
-		if(snakeBody[snake_body_i][4] == 1)
-			wSnakeBody=(snakeBody[snake_body_i][3] <= pix_x) && 
-											 (pix_x <= snakeBody[snake_body_i][2]) &&
-											 (snakeBody[snake_body_i][1] <= pix_y) && 
-											 (pix_y <= snakeBody[snake_body_i][0]);
+integer z;
+initial begin
+	for(z=0; z < maxSnakeSegments; z=z+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
+		snakeBody[z][4]=0;
+		snakeBody[z][3]=0;
+		snakeBody[z][2]=0;
+		snakeBody[z][1]=0;
+		snakeBody[z][0]=0;
 	end
 end
+
 
 integer is;
 always @(posedge clk)begin
@@ -122,21 +107,51 @@ always @(posedge clk)begin
 	if(~video_on)
 		rgb_reg = 3'b111;
 	else
-		if (wallLeft || wallRight || wallTop || wallBottom)
-			rgb_reg = wallRGB;
-		else if(snake || wSnakeBody)begin
-			rgb_reg = snakeRGB;
-		end
-		else if(fruit)
-			rgb_reg = fruitRGB;
-		else begin
-			/*for(is = 0; is<maxSnakeSegments; is=is+1)begin
-				if(wSnakeBody[is])
+		if(gameover == 0)begin
+			if (wallLeft || wallRight || wallTop || wallBottom)
+				rgb_reg = wallRGB;
+			else if(snake)begin
+				rgb_reg = snakeRGB;
+			end
+			else if(fruit)
+				rgb_reg = fruitRGB;
+			else begin
+				rgb_reg = 3'b000;
+			end
+			
+			for(is=0; is < maxSnakeSegments; is=is+1)begin
+				if((snakeBody[is][4] == 5) &&
+					(snakeBody[is][3] <= pix_x) && 
+					(pix_x <= snakeBody[is][2]) &&
+					(snakeBody[is][1] <= pix_y) && 
+					(pix_y <= snakeBody[is][0]) )
 					rgb_reg = snakeRGB;
-				else
+			end
+			
+		end
+		
+		else begin
+			if(gameover_counter < 2000000)begin
+				if (wallLeft || wallRight || wallTop || wallBottom)
+					rgb_reg = wallRGB;
+				else if(snake)begin
+					rgb_reg = snakeRGB;
+				end
+				else if(fruit)
+					rgb_reg = fruitRGB;
+				else begin
 					rgb_reg = 3'b000;
-			end*/
-			rgb_reg = 3'b000;
+				end
+				gameover_counter = gameover_counter + 1;
+			end
+			else if(gameover_counter < 4000000)begin
+				rgb_reg = 3'b001;
+				gameover_counter = gameover_counter + 1;
+			end
+			else if(gameover_counter == 4000000)
+				gameover_counter = 0;
+			else
+				gameover_counter = gameover_counter + 1;
 		end
 end
 assign graph_rgb =(video_on) ? rgb_reg : 3'b0;
@@ -145,7 +160,6 @@ assign graph_rgb =(video_on) ? rgb_reg : 3'b0;
 integer ix;
 integer ifruit;
 always @(posedge clk)begin
-	//if(counter == 25000000)begin //AVANZA CADA SEGUNDO
 	
 	if(initX1 == fruitX1 && initX2 == fruitX2 &&
 		initY1 == fruitY1 && initY2 == fruitY2)begin
@@ -170,10 +184,13 @@ always @(posedge clk)begin
 		end
 		else
 			score_reg1 <= score_reg1 + 1;
-			
+		
+		
+		snakeBody[snakeSize][4] <= 5;
 		snakeSize = snakeSize + 1;
-		snakeBody[snakeSize][4] <= 1;
-//Verifica si la fruta cae en la serpiente
+		
+		
+		//Verifica si la fruta cae en la serpiente
 		randNumX = snakeBody[0][3];
 		randNumY = snakeBody[0][1];
 		for(ifruit = 0; ifruit<maxSnakeSegments; ifruit=ifruit+1)begin
@@ -183,40 +200,64 @@ always @(posedge clk)begin
 				//ifruit = 0;
 			end;
 		end
+		
 		fruitX1=randX;
 		fruitX2=randX+25;
 		fruitY1=randY;
 		fruitY2=randY+25;
-
+		
+		//fruitX1=fruitX1+25;
+		//fruitX2=fruitX2+25;
+		
 	end
 		
 	//if(counter == 10000000)begin
-	if(counter == 8000000)begin
+	if(counter == 4000000)begin
+		/*if(gameover && isPaused)begin
+			initX1 = 10'd77;
+			initX2 = 10'd102;
+			initY1 = 10'd77;
+			initY2 = 10'd102;
+			fruitX1 = 10'd152;
+			fruitX2 = 10'd177;
+			fruitY1 = 10'd152;
+			fruitY2 = 10'd177;
+			snakeSize = 0;
+			score_reg1 <= 0;
+			score_reg2 <= 0;
+			score_reg3 <= 0;
+			score_reg4 <= 0;
+			gameover = 0;
+		end*/
 	
-		for(ix=0; ix < maxSnakeSegments; ix=ix+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
-			/*if(snakeBody[ix][3] == initX1 && snakeBody[ix][2] == initX2 &&
-				snakeBody[ix][1] == initY1 && snakeBody[ix][0] == initY2)begin
-				score_reg1 <= score_reg1 - 1;
-			end*/
-			if(ix==0)begin
-				if(snakeBody[snakeSize][4] === 1)begin
-					snakeBody[ix][3] <= initX1;
-					snakeBody[ix][2] <= initX2;
-					snakeBody[ix][1] <= initY1;
-					snakeBody[ix][0] <= initY2;
+		if(~isPaused && ~gameover)begin
+			for(ix=0; ix < maxSnakeSegments; ix=ix+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
+				if(snakeBody[ix][4]===5)begin
+					if(initX1 == snakeBody[ix][3] && initX2 == snakeBody[ix][2]  &&
+						initY1 == snakeBody[ix][1] && initY2 == snakeBody[ix][0] )begin
+						//score_reg1 <= score_reg1 - 1;
+						gameover = 1;
+					end
+				end
+				if(ix==0)begin
+					if(snakeBody[0][4] == 5)begin
+						snakeBody[ix][3] <= initX1;
+						snakeBody[ix][2] <= initX2;
+						snakeBody[ix][1] <= initY1;
+						snakeBody[ix][0] <= initY2;
+					end
+				end
+				else begin
+					if(snakeSize >= 1 && snakeBody[ix][4] == 5)begin
+						snakeBody[ix][3] <= snakeBody[ix-1][3];
+						snakeBody[ix][2] <= snakeBody[ix-1][2];
+						snakeBody[ix][1] <= snakeBody[ix-1][1];
+						snakeBody[ix][0] <= snakeBody[ix-1][0];
+					end
 				end
 			end
-			else begin
-				if(snakeBody[snakeSize][4] === 1)begin
-					snakeBody[ix][3] <= snakeBody[ix-1][3];
-					snakeBody[ix][2] <= snakeBody[ix-1][2];
-					snakeBody[ix][1] <= snakeBody[ix-1][1];
-					snakeBody[ix][0] <= snakeBody[ix-1][0];
-				end
-			end
-		end
 		
-		if(~isPaused)begin
+		
 			if(moveState == 0)begin
 				if(initY1 == 2)begin
 					initY1 = 10'd452;
