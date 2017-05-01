@@ -2,7 +2,7 @@
 
 module vga_top(
 	input ClkPort, 
-	input b_Up,b_Down,b_Left,b_Right,b_Pause,
+	input b_Up,b_Down,b_Left,b_Right,b_Pause,b_PauseType,
 	output vga_h_sync, vga_v_sync, 
 	output wire [2:0] rgb,
 	output [3:0] seg_selector,
@@ -16,7 +16,7 @@ module vga_top(
 	wire [9:0] pix_x;
 	wire [9:0] pix_y;
 	wire video_on,wIsPaused;
-	wire [1:0] wMoveState,wCurrentScreen;
+	wire [1:0] wMoveState,wCurrentScreen,wCurrentSelect,wDifficulty;
 	wire [7:0] wRandomX;
 	wire [7:0] wRandomY;
 	wire [3:0] wScore1,wScore2,wScore3,wScore4;
@@ -64,7 +64,9 @@ module vga_top(
 		.randX(randX_wire),
 		.randY(randY_wire),
 		.isPaused(wIsPaused),
-		.currentScreen(wCurrentScreen)
+		.currentScreen(wCurrentScreen),
+		.currentSelect(wCurrentSelect),
+		.difficulty(wDifficulty)
 	);
 		
 	Buttons_Control buttons_unit(
@@ -74,10 +76,12 @@ module vga_top(
 		.b_Lf(b_Left),
 		.b_Rg(b_Right),
 		.b_Pause(b_Pause),
+		.b_PauseType(b_PauseType),
 		.moveState(wMoveState),
 		.isPaused(wIsPaused),
-		.currentScreen(wCurrentScreen)
-		
+		.currentScreen(wCurrentScreen),
+		.currentSelect(wCurrentSelect),
+		.difficulty(wDifficulty)
 	);
 	
 	Segments_Controller segments_unit(
