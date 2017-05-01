@@ -4,6 +4,7 @@ module Buttons_Control(
 	input clk,
 	input b_Up,b_Dw,b_Lf,b_Rg,b_Pause,
 	output [1:0] moveState,
+	output [1:0] currentScreen,
 	output isPaused
 );
 
@@ -11,6 +12,7 @@ parameter UP = 0,DOWN = 1,LEFT = 2,RIGHT = 3;
 
 reg [1:0] moveState_reg;
 reg [3:0] pause_count;
+reg [1:0] currentState_reg = 0;
 reg pause_reg;
 
 always @(posedge clk)begin

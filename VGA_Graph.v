@@ -11,9 +11,11 @@ module VGA_Graph(
 	output [9:0] headY,
 	input [9:0]	randX,
 	input [9:0]	randY,
-	input isPaused
+	input isPaused,
+	input [1:0] currentScreen
 );
 
+localparam maxSnakeScale = 25;
 localparam maxSnakeSegments = 20;
 localparam wall_Left_X1 = 0;
 localparam wall_Left_X2 = 2;
@@ -40,8 +42,10 @@ reg [3:0] score_reg4 = 0;
 reg [3:0] score_factor = 4'd5;
 
 wire [2:0] wallRGB,snakeRGB,fruitRGB;
+reg [2:0] textRGB = 3'b110;
 reg [2:0] rgb_reg;
-
+reg [9:0] randNumX = 0;
+reg [9:0] randNumY = 0;
 
 
 reg [24:0] gameover_counter = 0;
@@ -50,23 +54,19 @@ reg [64:0] fruit_counter = 0;
 reg [64:0] snake_counter = 0;
 reg [11:0] snakeSize = 0;
 reg gameover = 0;
-reg [maxSnakeSegments-1:0] snake_body_i = 0;
 
-reg [9:0]initX1 = 10'd77;
-reg [9:0]initX2 = 10'd102;
-reg [9:0]initY1 = 10'd77;
-reg [9:0]initY2 = 10'd102;
+reg [9:0]initX1 = 2+(maxSnakeScale*3);
+reg [9:0]initX2 = 2+(maxSnakeScale*3)+maxSnakeScale;
+reg [9:0]initY1 = 2+(maxSnakeScale*3);
+reg [9:0]initY2 = 2+(maxSnakeScale*4)+maxSnakeScale;
 
-reg [9:0]snakeBody [maxSnakeSegments:0][4:0];
+reg [5:0]snakeBody [maxSnakeSegments:0][4:0];
 
 
-reg [9:0]fruitX1 = 10'd152;
-reg [9:0]fruitX2 = 10'd177;
-reg [9:0]fruitY1 = 10'd152;
-reg [9:0]fruitY2 = 10'd177;
-
-reg [9:0] randNumX = 0;
-reg [9:0] randNumY = 0;
+reg [9:0]fruitX1 = 2+(maxSnakeScale*9);
+reg [9:0]fruitX2 = 2+(maxSnakeScale*9)+maxSnakeScale;
+reg [9:0]fruitY1 = 2+(maxSnakeScale*2);
+reg [9:0]fruitY2 = 2+(maxSnakeScale*2)+maxSnakeScale;
 
 
 assign wallLeft = (wall_Left_X1 <= pix_x) && (pix_x <= wall_Left_X2);
@@ -89,6 +89,162 @@ assign wallRGB = 3'b111;
 assign snakeRGB = 3'b010;
 assign fruitRGB = 3'b100;
 
+
+//Text Signal Declaration
+wire [7:0] rom_addr;
+wire [6:0] char_addr;
+wire [3:0] row_addr ;
+wire [2:0] bit_addr;
+wire [7:0] font_word;
+wire font_bit ,text_bit_on;
+
+reg [7:0] rom_addr_reg;
+
+assign rom_addr = rom_addr_reg;
+
+// Letter boundaries
+localparam initXLetters = 200;
+localparam initYLetters = 124;
+localparam initYLetters2 = 162;
+localparam initYLetters3 = 194;
+
+wire zN,zU,zE,zV,zO,zJ,zU2,zE2,zG,zO2;
+wire zC,zA,zR,zG2,zA2,zJ2,zU3,zE3,zG3,zO3;
+wire zD,zI,zF,zI2,zC2,zU4,zL,zT,zA3,zD2;
+
+wire [2:0] lsbx;
+wire [3:0] lsby;
+assign lsbx = ~pix_x[2:0] ;
+assign lsby = pix_y[3:0];
+
+assign zN =(initXLetters<=pix_x) && (pix_x<=(initXLetters+7)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zU =((initXLetters+16)<=pix_x) && (pix_x<=(initXLetters+23)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zE =((initXLetters+32)<=pix_x) && (pix_x<=(initXLetters+39)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zV =((initXLetters+48)<=pix_x) && (pix_x<=(initXLetters+56)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zO =((initXLetters+62)<=pix_x) && (pix_x<=(initXLetters+73)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+
+assign zJ =((initXLetters+89)<=pix_x) && (pix_x<=(initXLetters+96)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zU2 =((initXLetters+102)<=pix_x) && (pix_x<=(initXLetters+112)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zE2 =((initXLetters+121)<=pix_x) && (pix_x<=(initXLetters+128)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zG =((initXLetters+135)<=pix_x) && (pix_x<=(initXLetters+144)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+assign zO2 =((initXLetters+151)<=pix_x) && (pix_x<=(initXLetters+160)) && 
+				(initYLetters<=pix_y) && (pix_y<=(initYLetters+15));
+
+assign zC =(initXLetters<=pix_x) && (pix_x<=(initXLetters+7)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zA =((initXLetters+16)<=pix_x) && (pix_x<=(initXLetters+23)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zR =((initXLetters+32)<=pix_x) && (pix_x<=(initXLetters+39)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zG2 =((initXLetters+48)<=pix_x) && (pix_x<=(initXLetters+56)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zA2 =((initXLetters+62)<=pix_x) && (pix_x<=(initXLetters+73)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+
+assign zJ2 =((initXLetters+89)<=pix_x) && (pix_x<=(initXLetters+96)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zU3 =((initXLetters+102)<=pix_x) && (pix_x<=(initXLetters+112)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zE3 =((initXLetters+121)<=pix_x) && (pix_x<=(initXLetters+128)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zG3 =((initXLetters+135)<=pix_x) && (pix_x<=(initXLetters+144)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+assign zO3 =((initXLetters+151)<=pix_x) && (pix_x<=(initXLetters+160)) && 
+				(initYLetters2<=pix_y) && (pix_y<=(initYLetters2+15));
+
+assign zD =(initXLetters<=pix_x) && (pix_x<=(initXLetters+7)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zI =((initXLetters+16)<=pix_x) && (pix_x<=(initXLetters+23)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zF =((initXLetters+32)<=pix_x) && (pix_x<=(initXLetters+39)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zI2 =((initXLetters+48)<=pix_x) && (pix_x<=(initXLetters+56)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zC2 =((initXLetters+62)<=pix_x) && (pix_x<=(initXLetters+73)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zU4 =((initXLetters+80)<=pix_x) && (pix_x<=(initXLetters+89)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zL =((initXLetters+100)<=pix_x) && (pix_x<=(initXLetters+107)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zT =((initXLetters+116)<=pix_x) && (pix_x<=(initXLetters+123)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zA3 =((initXLetters+132)<=pix_x) && (pix_x<=(initXLetters+139)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+assign zD2 =((initXLetters+148)<=pix_x) && (pix_x<=(initXLetters+155)) && 
+				(initYLetters3<=pix_y) && (pix_y<=(initYLetters3+15));
+
+font_rom font_unit(
+	.clk(clk),
+	.as(rom_addr),
+	.lsby(lsby),
+	.data(font_word)
+);
+
+reg pixelbit;
+
+always @* begin
+	if (zN)
+		rom_addr_reg <= 8'h14;
+	else if (zU||zU2||zU3||zU4)
+		rom_addr_reg <= 8'h21;
+	else if (zE||zE2||zE3)
+		rom_addr_reg <= 8'h05;
+	else if (zV)
+		rom_addr_reg <= 8'h22;
+	else if (zO||zO2||zO3)
+		rom_addr_reg <= 8'h15;
+	else if (zJ||zJ2)
+		rom_addr_reg <= 8'h10;
+	else if (zG||zG2||zG3)
+		rom_addr_reg <= 8'h07;
+	else if (zA||zA2||zA3)
+		rom_addr_reg <= 8'h01;
+	else if (zC||zC2)
+		rom_addr_reg <= 8'h03;
+	else if (zR)
+		rom_addr_reg <= 8'h18;
+	else if (zD||zD2)
+		rom_addr_reg <= 8'h04;
+	else if (zI||zI2)
+		rom_addr_reg <= 8'h09;
+	else if (zF)
+		rom_addr_reg <= 8'h06;
+	else if (zL)
+		rom_addr_reg <= 8'h12;
+	else if (zT)
+		rom_addr_reg <= 8'h20;
+	else
+		rom_addr_reg <= 8'h00;   
+end
+
+always @(posedge clk)
+	case (lsbx)
+		3'h0: pixelbit <= font_word[0];
+		3'h1: pixelbit <= font_word[1];
+		3'h2: pixelbit <= font_word[2];
+		3'h3: pixelbit <= font_word[3];
+		3'h4: pixelbit <= font_word[4];
+		3'h5: pixelbit <= font_word[5];
+		3'h6: pixelbit <= font_word[6];
+		3'h7: pixelbit <= font_word[7];
+	endcase
+	
+always @(posedge clk)
+	  if (pixelbit)
+			textRGB <= 3'b110;
+	  else
+			textRGB <= 3'b000;
+
+
 integer z;
 initial begin
 	for(z=0; z < maxSnakeSegments; z=z+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
@@ -107,31 +263,18 @@ always @(posedge clk)begin
 	if(~video_on)
 		rgb_reg = 3'b111;
 	else
-		if(gameover == 0)begin
+		if(currentScreen == 0)begin
 			if (wallLeft || wallRight || wallTop || wallBottom)
 				rgb_reg = wallRGB;
-			else if(snake)begin
-				rgb_reg = snakeRGB;
-			end
-			else if(fruit)
-				rgb_reg = fruitRGB;
-			else begin
+			else if (zN|zU|zE|zV|zO|zJ|zU2|zE2|zG|zO2|
+						zC|zA|zR|zG2|zA2|zJ2|zU3|zE3|zG3|zO3|
+						zD|zI|zF|zI2|zC2|zU4|zL|zT|zA3|zD2)
+				rgb_reg = textRGB;
+			else
 				rgb_reg = 3'b000;
-			end
-			
-			for(is=0; is < maxSnakeSegments; is=is+1)begin
-				if((snakeBody[is][4] == 5) &&
-					(snakeBody[is][3] <= pix_x) && 
-					(pix_x <= snakeBody[is][2]) &&
-					(snakeBody[is][1] <= pix_y) && 
-					(pix_y <= snakeBody[is][0]) )
-					rgb_reg = snakeRGB;
-			end
-			
 		end
-		
-		else begin
-			if(gameover_counter < 2000000)begin
+		if(currentScreen == 3)begin
+			if(gameover == 0)begin
 				if (wallLeft || wallRight || wallTop || wallBottom)
 					rgb_reg = wallRGB;
 				else if(snake)begin
@@ -142,16 +285,41 @@ always @(posedge clk)begin
 				else begin
 					rgb_reg = 3'b000;
 				end
-				gameover_counter = gameover_counter + 1;
+				
+				for(is=0; is < maxSnakeSegments; is=is+1)begin
+					if((snakeBody[is][4] == 5) &&
+						(2+(maxSnakeScale*snakeBody[is][3]) <= pix_x) && 
+						(pix_x <= 2+(maxSnakeScale*snakeBody[is][2])) &&
+						(2+(maxSnakeScale*snakeBody[is][1]) <= pix_y) && 
+						(pix_y <= 2+(maxSnakeScale*snakeBody[is][0])) )
+						rgb_reg = snakeRGB;
+				end
+				
 			end
-			else if(gameover_counter < 4000000)begin
-				rgb_reg = 3'b001;
-				gameover_counter = gameover_counter + 1;
+			
+			else begin
+				if(gameover_counter < 2000000)begin
+					if (wallLeft || wallRight || wallTop || wallBottom)
+						rgb_reg = wallRGB;
+					else if(snake)begin
+						rgb_reg = snakeRGB;
+					end
+					else if(fruit)
+						rgb_reg = fruitRGB;
+					else begin
+						rgb_reg = 3'b000;
+					end
+					gameover_counter = gameover_counter + 1;
+				end
+				else if(gameover_counter < 4000000)begin
+					rgb_reg = 3'b001;
+					gameover_counter = gameover_counter + 1;
+				end
+				else if(gameover_counter == 4000000)
+					gameover_counter = 0;
+				else
+					gameover_counter = gameover_counter + 1;
 			end
-			else if(gameover_counter == 4000000)
-				gameover_counter = 0;
-			else
-				gameover_counter = gameover_counter + 1;
 		end
 end
 assign graph_rgb =(video_on) ? rgb_reg : 3'b0;
@@ -161,7 +329,7 @@ integer ix;
 integer ifruit;
 always @(posedge clk)begin
 	
-	if(initX1 == fruitX1 && initX2 == fruitX2 &&
+	if(initX1 == fruitX1 && initX2 == fruitX2 && 
 		initY1 == fruitY1 && initY2 == fruitY2)begin
 		
 		if(score_reg1 == 4'd9) begin
@@ -233,18 +401,21 @@ always @(posedge clk)begin
 		if(~isPaused && ~gameover)begin
 			for(ix=0; ix < maxSnakeSegments; ix=ix+1)begin //X1 = 3,X2=2,Y1=1,Y2=0
 				if(snakeBody[ix][4]===5)begin
-					if(initX1 == snakeBody[ix][3] && initX2 == snakeBody[ix][2]  &&
-						initY1 == snakeBody[ix][1] && initY2 == snakeBody[ix][0] )begin
+					if(initX1/maxSnakeScale == snakeBody[ix][3] && 
+						initX2/maxSnakeScale == snakeBody[ix][2] &&
+						initY1/maxSnakeScale == snakeBody[ix][1] && 
+						initY2/maxSnakeScale == snakeBody[ix][0] )begin
 						//score_reg1 <= score_reg1 - 1;
 						gameover = 1;
 					end
 				end
 				if(ix==0)begin
 					if(snakeBody[0][4] == 5)begin
-						snakeBody[ix][3] <= initX1;
-						snakeBody[ix][2] <= initX2;
-						snakeBody[ix][1] <= initY1;
-						snakeBody[ix][0] <= initY2;
+					
+						snakeBody[ix][3] <= (initX1)/maxSnakeScale;
+						snakeBody[ix][2] <= (initX2)/maxSnakeScale;
+						snakeBody[ix][1] <= (initY1)/maxSnakeScale;
+						snakeBody[ix][0] <= (initY2)/maxSnakeScale;
 					end
 				end
 				else begin
@@ -260,43 +431,43 @@ always @(posedge clk)begin
 		
 			if(moveState == 0)begin
 				if(initY1 == 2)begin
-					initY1 = 10'd452;
+					initY1 = 477-maxSnakeScale;
 					initY2 = 10'd477;
 				end
 				else begin
-					initY1 = initY1 - 25;
-					initY2 = initY2 - 25;
+					initY1 = initY1 - maxSnakeScale;
+					initY2 = initY2 - maxSnakeScale;
 				end
 			end
 			else if(moveState == 1)begin
 				if(initY2 == 477)begin
 					initY1 = 10'd2;
-					initY2 = 10'd27;
+					initY2 = 2+maxSnakeScale;
 				end
 				else begin
-					initY1 = initY1 + 25;
-					initY2 = initY2 + 25;
+					initY1 = initY1 + maxSnakeScale;
+					initY2 = initY2 + maxSnakeScale;
 				end
 				
 			end
 			else if(moveState == 2)begin
 				if(initX1 == 2)begin
-					initX1 = 10'd577;
+					initX1 = 602-maxSnakeScale;
 					initX2 = 10'd602;
 				end
 				else begin
-					initX1 = initX1 - 25;
-					initX2 = initX2 - 25;
+					initX1 = initX1 - maxSnakeScale;
+					initX2 = initX2 - maxSnakeScale;
 				end
 			end
 			else if(moveState == 3)begin
 				if(initX2 == 602)begin
 					initX1 = 10'd2;
-					initX2 = 10'd27;
+					initX2 = 2+maxSnakeScale;
 				end
 				else begin
-					initX1 = initX1 + 25;
-					initX2 = initX2 + 25;
+					initX1 = initX1 + maxSnakeScale;
+					initX2 = initX2 + maxSnakeScale;
 				end
 			end
 		end

@@ -1,32 +1,19 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date:    14:54:20 04/25/2017 
-// Design Name: 
-// Module Name:    font_rom 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
-//
-// Dependencies: 
-//
-// Revision: 
-// Revision 0.01 - File Created
-// Additional Comments: 
-//
-//////////////////////////////////////////////////////////////////////////////////
+
 module font_rom(
     input clk,
-    input [10:0] addr,
-    output [7:0] data
+    //input [10:0] addr,
+	 input wire [7:0]as,
+    input wire [3:0]lsby,
+    output reg [7:0] data
     );
+	 
 	 reg [10:0] addr_reg;
+	 
 	 always@(posedge clk)
-		addr_reg <= addr;
-	
+		//addr_reg <= addr;
+		addr_reg <= {as,lsby};
+		
 	 always@*
 		case(addr_reg)
 			//espacio vacio
@@ -147,7 +134,7 @@ module font_rom(
 			11'h06d: data =8'b00000000;//   d
 			11'h06e: data =8'b00000000;//   e
 			11'h06f: data =8'b00000000;//   f
-			//code x47
+			//G: code x47
 			11'h070: data =8'b00000000;//   0
 			11'h071: data =8'b00000000;//   1
 			11'h072: data =8'b00111100;//   2   ****
@@ -184,7 +171,7 @@ module font_rom(
 			//I: code x49
 			11'h090: data =8'b00000000;//   0
 			11'h091: data =8'b00000000;//   1
-			11'h091: data =8'b00111100;//   2   ****
+			11'h091: data =8'b01111110;//   2   ****
 			11'h091: data =8'b00011000;//   3    **
 			11'h091: data =8'b00011000;//   4    **
 			11'h091: data =8'b00011000;//   5    **
@@ -193,7 +180,7 @@ module font_rom(
 			11'h091: data =8'b00011000;//   8    **
 			11'h091: data =8'b00011000;//   9    **
 			11'h091: data =8'b00011000;//   a    **
-			11'h091: data =8'b00111100;//   b   ****
+			11'h091: data =8'b01111110;//   b   ****
 			11'h091: data =8'b00000000;//   c
 			11'h091: data =8'b00000000;//   d
 			11'h091: data =8'b00000000;//   e

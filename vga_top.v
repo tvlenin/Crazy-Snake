@@ -16,7 +16,7 @@ module vga_top(
 	wire [9:0] pix_x;
 	wire [9:0] pix_y;
 	wire video_on,wIsPaused;
-	wire [1:0] wMoveState;
+	wire [1:0] wMoveState,wCurrentScreen;
 	wire [7:0] wRandomX;
 	wire [7:0] wRandomY;
 	wire [3:0] wScore1,wScore2,wScore3,wScore4;
@@ -59,11 +59,12 @@ module vga_top(
 		.score2(wScore2),
 		.score3(wScore3),
 		.score4(wScore4),
-		.headX(headX_wire),//output
+		.headX(headX_wire),
 		.headY(headY_wire),
 		.randX(randX_wire),
 		.randY(randY_wire),
-		.isPaused(wIsPaused)
+		.isPaused(wIsPaused),
+		.currentScreen(wCurrentScreen)
 	);
 		
 	Buttons_Control buttons_unit(
@@ -74,7 +75,9 @@ module vga_top(
 		.b_Rg(b_Right),
 		.b_Pause(b_Pause),
 		.moveState(wMoveState),
-		.isPaused(wIsPaused)
+		.isPaused(wIsPaused),
+		.currentScreen(wCurrentScreen)
+		
 	);
 	
 	Segments_Controller segments_unit(
