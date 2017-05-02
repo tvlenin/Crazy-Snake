@@ -135,7 +135,7 @@ font_rom font_unit(
 
 
 localparam maxSnakeScale = 25;
-localparam maxSnakeSegments = 20;
+localparam maxSnakeSegments = 25;
 localparam wall_Left_X1 = 0;
 localparam wall_Left_X2 = 2;
 localparam wall_Right_X1 = 602;
