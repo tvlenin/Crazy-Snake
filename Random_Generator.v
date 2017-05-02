@@ -22,10 +22,18 @@ always@(posedge clock)begin
 		pulse = pulse +1;
 		randomX = (xValues[1:0] ) * (yValues[3:1]+ pulse[0]);
 		randomY = (yValues[5:4]+ pulse[0])  * (xValues[2:0]);
-		if (randomY > 19)
+		if (randomX > 20)
+			randomX = randomX - yValues[3:1]; 
+		else if (randomY > 19)
 			randomY = 18;
-		else
+		else if (randomX == 0 && randomY == 0)begin
+			randomY = (yValues[6:5]+ pulse[0])  * (xValues[5:3]);
+			randomX = (xValues[3:2] ) * (yValues[5:2]+ pulse[23]);
+		end
+		else begin
 			randomY = (yValues[5:4]+ pulse[0])  * (xValues[2:0]);
+			randomX = (xValues[1:0] ) * (yValues[3:1]+ pulse[0]);
+		end
 end//always
 assign randNumX = (randomX*25)+2;
 assign randNumY = (randomY*25)+2;
