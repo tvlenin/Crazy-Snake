@@ -445,7 +445,7 @@ always @(posedge clk)begin
 			randNumY = snakeBody[0][1];
 			for(ifruit = 0; ifruit<maxSnakeSegments; ifruit=ifruit+1)begin
 				if(snakeBody[ifruit][3] == randX && snakeBody[ifruit][1] == randY)begin
-					randNumX = randNumX + 125;
+					randNumX = randNumX + 250;
 					randNumY = randNumY + 150;
 					//ifruit = 0;
 				end;

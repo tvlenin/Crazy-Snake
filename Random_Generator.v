@@ -27,8 +27,8 @@ always@(posedge clock)begin
 		else if (randomY > 19)
 			randomY = 18;
 		else if (randomX == 0 && randomY == 0)begin
-			randomY = (yValues[6:5]+ pulse[0])  * (xValues[5:3]);
-			randomX = (xValues[3:2] ) * (yValues[5:2]+ pulse[23]);
+			randomY = 15;
+			randomX = 15;
 		end
 		else begin
 			randomY = (yValues[5:4]+ pulse[0])  * (xValues[2:0]);
